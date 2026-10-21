@@ -98,3 +98,24 @@ def create_task(body: TaskCreate):
     next_id += 1
     tasks.append(task)
     return task
+
+
+@app.put("/tasks/{task_id}", response_model=Task, summary="Update a task")
+def update_task(task_id: int, body: TaskUpdate):
+    """Change a task's `title` and/or `done`. 404 if unknown, 400 if the body is empty."""
+    task = find_task(task_id)
+    if body.title is None and body.done is None:
+        raise HTTPException(status_code=400, detail="Provide title and/or done")
+    if body.title is not None:
+        task["title"] = body.title
+    if body.done is not None:
+        task["done"] = body.done
+    return task
+
+
+@app.delete("/tasks/{task_id}", status_code=204, summary="Delete a task")
+def delete_task(task_id: int):
+    """Remove a task. Returns 204 with no body, or 404 if unknown."""
+    task = find_task(task_id)
+    tasks.remove(task)
+    return Response(status_code=204)
