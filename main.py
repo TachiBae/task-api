@@ -4,7 +4,11 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-app = FastAPI(title="Task API", version="1.0")
+app = FastAPI(
+    title="Task API",
+    version="1.0",
+    description="A small in-memory CRUD API for a to-do list.",
+)
 
 
 # ---------- schemas ----------
@@ -80,11 +84,11 @@ def health():
 # ---------- CRUD ----------
 @app.get("/tasks", response_model=list[Task], summary="List all tasks")
 def list_tasks():
-    """Return every task in the in-memory list."""
+    """Return every task, in the order they were created."""
     return tasks
 
 
-@app.get("/tasks/{task_id}", response_model=Task, summary="Get one task")
+@app.get("/tasks/{task_id}", response_model=Task, summary="Get one task", responses={404: {"description": "Task not found"}})
 def get_task(task_id: int):
     """Return the task with this id, or 404 if it does not exist."""
     return find_task(task_id)
@@ -100,7 +104,7 @@ def create_task(body: TaskCreate):
     return task
 
 
-@app.put("/tasks/{task_id}", response_model=Task, summary="Update a task")
+@app.put("/tasks/{task_id}", response_model=Task, summary="Update a task", responses={404: {"description": "Task not found"}})
 def update_task(task_id: int, body: TaskUpdate):
     """Change a task's `title` and/or `done`. 404 if unknown, 400 if the body is empty."""
     task = find_task(task_id)
@@ -113,7 +117,7 @@ def update_task(task_id: int, body: TaskUpdate):
     return task
 
 
-@app.delete("/tasks/{task_id}", status_code=204, summary="Delete a task")
+@app.delete("/tasks/{task_id}", status_code=204, summary="Delete a task", responses={404: {"description": "Task not found"}})
 def delete_task(task_id: int):
     """Remove a task. Returns 204 with no body, or 404 if unknown."""
     task = find_task(task_id)
