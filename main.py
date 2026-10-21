@@ -88,3 +88,13 @@ def list_tasks():
 def get_task(task_id: int):
     """Return the task with this id, or 404 if it does not exist."""
     return find_task(task_id)
+
+
+@app.post("/tasks", response_model=Task, status_code=201, summary="Create a task")
+def create_task(body: TaskCreate):
+    """Create a task from `{"title": "..."}`. The server sets `id` and `done=false`."""
+    global next_id
+    task = {"id": next_id, "title": body.title, "done": False}
+    next_id += 1
+    tasks.append(task)
+    return task
